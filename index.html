@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏀 NBA Analytics Dashboard - Angel Alexander Barrientos</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #FF6B35;
+            --secondary: #004E89;
+            --accent: #1A659E;
+            --dark: #0A1628;
+            --gray: #1E293B;
+            --light: #F8FAFC;
+            --text: #E2E8F0;
+            --border: #334155;
+            --gold: #FFD700;
+            --orange: #FF8C00;
+            --purple: #8B5CF6;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, #0F172A 25%, #1E1B4B 50%, #0F172A 75%, var(--dark) 100%);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Fondo animado con pelotas de baloncesto */
+        .basketball-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .basketball {
+            position: absolute;
+            font-size: 2rem;
+            opacity: 0.1;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .basketball:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 6s; }
+        .basketball:nth-child(2) { left: 20%; animation-delay: 1s; animation-duration: 8s; }
+        .basketball:nth-child(3) { left: 30%; animation-delay: 2s; animation-duration: 7s; }
+        .basketball:nth-child(4) { left: 40%; animation-delay: 3s; animation-duration: 9s; }
+        .basketball:nth-child(5) { left: 50%; animation-delay: 4s; animation-duration: 6s; }
+        .basketball:nth-child(6) { left: 60%; animation-delay: 5s; animation-duration: 8s; }
+        .basketball:nth-child(7) { left: 70%; animation-delay: 6s; animation-duration: 7s; }
+        .basketball:nth-child(8) { left: 80%; animation-delay: 7s; animation-duration: 9s; }
+        .basketball:nth-child(9) { left: 90%; animation-delay: 8s; animation-duration: 6s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); }
+            50% { transform: translateY(-100px) rotate(180deg); }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Header mejorado */
+        .header {
+            text-align: center;
+            margin-bottom: 4rem;
+            padding: 3rem 0;
+            border-bottom: 2px solid var(--border);
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--gold), var(--primary));
+            border-radius: 2px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { box-shadow: 0 0 10px var(--primary); }
+            to { box-shadow: 0 0 20px var(--gold), 0 0 30px var(--primary); }
+        }
+
+        .header h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--primary), var(--gold), var(--orange), var(--primary));
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+            animation: gradientShift 3s ease-in-out infinite;
+            text-shadow: 0 0 30px rgba(255, 107, 53, 0.5);
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header p {
+            font-size: 1.5rem;
+            color: var(--text);
+            opacity: 0.9;
+            margin-bottom: 1rem;
+            animation: fadeInUp 1s ease-out 0.5s both;
+        }
+
+        .author {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            font-size: 1.1rem;
+            color: var(--gold);
+            font-weight: 600;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 140, 0, 0.1));
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            border: 1px solid var(--gold);
+            animation: fadeInUp 1s ease-out 0.7s both;
+        }
+
+        .author::before {
+            content: '👑';
+            font-size: 1.2rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Stats Cards mejoradas */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid var(--border);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(10px);
+            animation: slideInUp 0.8s ease-out both;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(60px) scale(0.8); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .stat-card:hover::before {
+            left: 100%;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 40px rgba(255, 107, 53, 0.3);
+            border-color: var(--primary);
+        }
+
+        .stat-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .stat-value {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-family: 'Space Grotesk', sans-serif;
+            text-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
+            animation: countUp 2s ease-out;
+        }
+
+        @keyframes countUp {
+            from { opacity: 0; transform: scale(0.5); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--text);
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 600;
+        }
+
+        /* Charts Grid mejorado */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 2.5rem;
+            margin-bottom: 4rem;
+        }
+
+        .chart-container {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            animation: fadeIn 1s ease-out both;
+        }
+
+        .chart-container:nth-child(1) { animation-delay: 0.2s; }
+        .chart-container:nth-child(2) { animation-delay: 0.4s; }
+        .chart-container:nth-child(3) { animation-delay: 0.6s; }
+        .chart-container:nth-child(4) { animation-delay: 0.8s; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .chart-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            border-color: var(--primary);
+        }
+
+        .chart-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--light);
+            margin-bottom: 2rem;
+            font-family: 'Space Grotesk', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 350px;
+        }
+
+        /* Data Table mejorada */
+        .table-container {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+            border-radius: 20px;
+            padding: 2.5rem;
+            border: 1px solid var(--border);
+            margin-bottom: 3rem;
+            backdrop-filter: blur(10px);
+            animation: fadeIn 1s ease-out 1s both;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1.5rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, var(--dark), var(--gray));
+            color: var(--light);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-size: 0.9rem;
+        }
+
+        .data-table tr {
+            transition: all 0.3s ease;
+        }
+
+        .data-table tr:hover {
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 140, 0, 0.1));
+            transform: scale(1.02);
+        }
+
+        .data-table td:first-child {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Loading mejorado */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            color: var(--text);
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .spinner::after {
+            content: '🏀';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading p {
+            font-size: 1.2rem;
+            font-weight: 600;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Responsive mejorado */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+
+            .stat-card {
+                padding: 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 3rem;
+            }
+        }
+
+        /* Efectos adicionales */
+        .glow-effect {
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+        }
+
+        .team-colors {
+            background: linear-gradient(45deg, var(--primary), var(--gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body>
+    <!-- Fondo animado -->
+    <div class="basketball-bg">
+        <div class="basketball">🏀</div>
+        <div class="basketball">🏀</div>
+        <div class="basketball">🏀</div>
+        <div class="basketball">🏀</div>
+        <div class="basketball">🏀</div>
+        <div class="basketball">🏀</div>
+        <div class="basketball">🏀</div>
+        <div class="basketball">🏀</div>
+        <div class="basketball">🏀</div>
+    </div>
+
+    <div class="container">
+        <!-- Header mejorado -->
+        <div class="header">
+            <h1>🏀 NBA ANALYTICS DASHBOARD</h1>
+            <p>El Dashboard Más Épico de Estadísticas NBA</p>
+            <div class="author">Por Angel Alexander Barrientos Hidalgo</div>
+        </div>
+
+        <!-- Loading State mejorado -->
+        <div id="loadingState" class="loading">
+            <div class="spinner"></div>
+            <p>Cargando las estadísticas más increíbles de la NBA...</p>
+            <p style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Preparando datos épicos 🔥</p>
+        </div>
+
+        <!-- Main Content -->
+        <div id="mainContent" style="display: none;">
+            <!-- Stats Cards mejoradas -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-icon">👥</span>
+                    <div class="stat-value" id="totalPlayers">0</div>
+                    <div class="stat-label">Total Jugadores</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">📈</span>
+                    <div class="stat-value" id="avgEfficiency">0.0</div>
+                    <div class="stat-label">Eficiencia Promedio</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">🎯</span>
+                    <div class="stat-value" id="avgPoints">0.0</div>
+                    <div class="stat-label">Puntos Promedio</div>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-icon">⚡</span>
+                    <div class="stat-value" id="activePlayers">0</div>
+                    <div class="stat-label">Jugadores Activos</div>
+                </div>
+            </div>
+
+            <!-- Charts mejorados -->
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-title">📊 Distribución de Eficiencia</div>
+                    <div class="chart-wrapper">
+                        <canvas id="efficiencyChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">🏀 Estadísticas por Posición</div>
+                    <div class="chart-wrapper">
+                        <canvas id="positionChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">🏆 Top 10 Equipos por Eficiencia</div>
+                    <div class="chart-wrapper">
+                        <canvas id="teamsChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">📈 Evolución por Era</div>
+                    <div class="chart-wrapper">
+                        <canvas id="eraChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Performers Table mejorada -->
+            <div class="table-container">
+                <h3 class="chart-title">🌟 Top 20 Superstars de la NBA</h3>
+                <div style="overflow-x: auto;">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>🏀 Jugador</th>
+                                <th>🏟️ Equipo</th>
+                                <th>📍 Posición</th>
+                                <th>🎯 Puntos</th>
+                                <th>🔄 Rebotes</th>
+                                <th>🤝 Asistencias</th>
+                                <th>⚡ Eficiencia</th>
+                                <th>📅 Era</th>
+                            </tr>
+                        </thead>
+                        <tbody id="playersTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Datos simulados mejorados de NBA
+        const nbaData = [
+            {
+                PLAYER_FIRST_NAME: "LeBron",
+                PLAYER_LAST_NAME: "James",
+                TEAM_ABBREVIATION: "LAL",
+                POSITION: "SF",
+                PTS: 28.9,
+                REB: 8.3,
+                AST: 6.8,
+                EFFICIENCY: 27.5,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Stephen",
+                PLAYER_LAST_NAME: "Curry",
+                TEAM_ABBREVIATION: "GSW",
+                POSITION: "PG",
+                PTS: 29.5,
+                REB: 5.2,
+                AST: 6.1,
+                EFFICIENCY: 24.8,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Giannis",
+                PLAYER_LAST_NAME: "Antetokounmpo",
+                TEAM_ABBREVIATION: "MIL",
+                POSITION: "PF",
+                PTS: 31.1,
+                REB: 11.8,
+                AST: 5.7,
+                EFFICIENCY: 32.1,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Luka",
+                PLAYER_LAST_NAME: "Dončić",
+                TEAM_ABBREVIATION: "DAL",
+                POSITION: "PG",
+                PTS: 32.4,
+                REB: 8.6,
+                AST: 8.0,
+                EFFICIENCY: 28.7,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Jayson",
+                PLAYER_LAST_NAME: "Tatum",
+                TEAM_ABBREVIATION: "BOS",
+                POSITION: "SF",
+                PTS: 30.1,
+                REB: 8.8,
+                AST: 4.9,
+                EFFICIENCY: 25.6,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Joel",
+                PLAYER_LAST_NAME: "Embiid",
+                TEAM_ABBREVIATION: "PHI",
+                POSITION: "C",
+                PTS: 33.1,
+                REB: 10.2,
+                AST: 4.2,
+                EFFICIENCY: 31.4,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Nikola",
+                PLAYER_LAST_NAME: "Jokić",
+                TEAM_ABBREVIATION: "DEN",
+                POSITION: "C",
+                PTS: 24.5,
+                REB: 11.8,
+                AST: 9.8,
+                EFFICIENCY: 27.8,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Kevin",
+                PLAYER_LAST_NAME: "Durant",
+                TEAM_ABBREVIATION: "PHX",
+                POSITION: "PF",
+                PTS: 29.7,
+                REB: 6.7,
+                AST: 5.0,
+                EFFICIENCY: 26.3,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Damian",
+                PLAYER_LAST_NAME: "Lillard",
+                TEAM_ABBREVIATION: "MIL",
+                POSITION: "PG",
+                PTS: 32.2,
+                REB: 4.8,
+                AST: 7.3,
+                EFFICIENCY: 24.1,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Anthony",
+                PLAYER_LAST_NAME: "Davis",
+                TEAM_ABBREVIATION: "LAL",
+                POSITION: "PF",
+                PTS: 25.9,
+                REB: 12.5,
+                AST: 2.6,
+                EFFICIENCY: 26.7,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Kawhi",
+                PLAYER_LAST_NAME: "Leonard",
+                TEAM_ABBREVIATION: "LAC",
+                POSITION: "SF",
+                PTS: 23.7,
+                REB: 6.2,
+                AST: 3.9,
+                EFFICIENCY: 22.8,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Jimmy",
+                PLAYER_LAST_NAME: "Butler",
+                TEAM_ABBREVIATION: "MIA",
+                POSITION: "SF",
+                PTS: 22.9,
+                REB: 5.9,
+                AST: 5.3,
+                EFFICIENCY: 21.4,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Ja",
+                PLAYER_LAST_NAME: "Morant",
+                TEAM_ABBREVIATION: "MEM",
+                POSITION: "PG",
+                PTS: 26.2,
+                REB: 5.9,
+                AST: 8.1,
+                EFFICIENCY: 23.5,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Zion",
+                PLAYER_LAST_NAME: "Williamson",
+                TEAM_ABBREVIATION: "NOP",
+                POSITION: "PF",
+                PTS: 26.0,
+                REB: 7.0,
+                AST: 3.7,
+                EFFICIENCY: 24.3,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Trae",
+                PLAYER_LAST_NAME: "Young",
+                TEAM_ABBREVIATION: "ATL",
+                POSITION: "PG",
+                PTS: 25.7,
+                REB: 2.8,
+                AST: 10.8,
+                EFFICIENCY: 22.1,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Devin",
+                PLAYER_LAST_NAME: "Booker",
+                TEAM_ABBREVIATION: "PHX",
+                POSITION: "SG",
+                PTS: 27.1,
+                REB: 4.5,
+                AST: 6.7,
+                EFFICIENCY: 23.9,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Donovan",
+                PLAYER_LAST_NAME: "Mitchell",
+                TEAM_ABBREVIATION: "CLE",
+                POSITION: "SG",
+                PTS: 28.3,
+                REB: 4.4,
+                AST: 4.3,
+                EFFICIENCY: 22.7,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Karl-Anthony",
+                PLAYER_LAST_NAME: "Towns",
+                TEAM_ABBREVIATION: "NYK",
+                POSITION: "C",
+                PTS: 22.0,
+                REB: 8.8,
+                AST: 3.0,
+                EFFICIENCY: 21.5,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Bam",
+                PLAYER_LAST_NAME: "Adebayo",
+                TEAM_ABBREVIATION: "MIA",
+                POSITION: "C",
+                PTS: 19.3,
+                REB: 10.4,
+                AST: 3.4,
+                EFFICIENCY: 20.8,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            },
+            {
+                PLAYER_FIRST_NAME: "Rudy",
+                PLAYER_LAST_NAME: "Gobert",
+                TEAM_ABBREVIATION: "MIN",
+                POSITION: "C",
+                PTS: 14.0,
+                REB: 12.9,
+                AST: 1.3,
+                EFFICIENCY: 18.2,
+                BASKETBALL_ERA: "Modern",
+                CAREER_STATUS: "Active"
+            }
+        ];
+
+        let charts = {};
+
+        // Configuración mejorada de Chart.js
+        Chart.defaults.color = '#E2E8F0';
+        Chart.defaults.backgroundColor = '#FF6B35';
+        Chart.defaults.borderColor = '#334155';
+
+        // Cargar datos al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadNBAData();
+        });
+
+        async function loadNBAData() {
+            try {
+                // Simular delay de carga con animación
+                await new Promise(resolve => setTimeout(resolve, 2500));
+                
+                console.log('Datos cargados:', nbaData.length, 'jugadores');
+                
+                updateDashboard();
+                createCharts();
+                
+                // Transición suave
+                document.getElementById('loadingState').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('mainContent').style.display = 'block';
+                    document.getElementById('mainContent').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('mainContent').style.opacity = '1';
+                    }, 100);
+                }, 500);
+                
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('loadingState').innerHTML = '<p>❌ Error al cargar los datos épicos</p>';
+            }
+        }
+
+        function updateDashboard() {
+            // Calcular estadísticas
+            const totalPlayers = nbaData.length;
+            const avgEfficiency = (nbaData.reduce((sum, p) => sum + parseFloat(p.EFFICIENCY), 0) / totalPlayers).toFixed(1);
+            const avgPoints = (nbaData.reduce((sum, p) => sum + p.PTS, 0) / totalPlayers).toFixed(1);
+            const activePlayers = nbaData.filter(p => p.CAREER_STATUS === 'Active').length;
+
+            // Animación de conteo para las estadísticas
+            animateValue('totalPlayers', 0, totalPlayers, 2000);
+            animateValue('avgEfficiency', 0, parseFloat(avgEfficiency), 2000, 1);
+            animateValue('avgPoints', 0, parseFloat(avgPoints), 2000, 1);
+            animateValue('activePlayers', 0, activePlayers, 2000);
+
+            // Actualizar tabla de top performers
+            updateTopPerformersTable();
+        }
+
+        function animateValue(id, start, end, duration, decimals = 0) {
+            const element = document.getElementById(id);
+            const range = end - start;
+            const increment = range / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= end) {
+                    current = end;
+                    clearInterval(timer);
+                }
+                element.textContent = decimals > 0 ? current.toFixed(decimals) : Math.floor(current).toLocaleString();
+            }, 16);
+        }
+
+        function updateTopPerformersTable() {
+            const topPerformers = nbaData
+                .sort((a, b) => parseFloat(b.EFFICIENCY) - parseFloat(a.EFFICIENCY))
+                .slice(0, 20);
+
+            const tbody = document.getElementById('playersTableBody');
+            tbody.innerHTML = '';
+
+            topPerformers.forEach((player, index) => {
+                const row = document.createElement('tr');
+                row.style.animationDelay = `${index * 0.1}s`;
+                row.innerHTML = `
+                    <td class="team-colors">${player.PLAYER_FIRST_NAME} ${player.PLAYER_LAST_NAME}</td>
+                    <td><strong>${player.TEAM_ABBREVIATION}</strong></td>
+                    <td><span style="background: linear-gradient(45deg, #FF6B35, #FFD700); padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.8rem;">${player.POSITION}</span></td>
+                    <td><strong>${player.PTS}</strong></td>
+                    <td><strong>${player.REB}</strong></td>
+                    <td><strong>${player.AST}</strong></td>
+                    <td><span style="color: #FFD700; font-weight: bold;">${player.EFFICIENCY}</span></td>
+                    <td>${player.BASKETBALL_ERA}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function createCharts() {
+            createEfficiencyChart();
+            createPositionChart();
+            createTeamsChart();
+            createEraChart();
+        }
+
+        function createEfficiencyChart() {
+            const ctx = document.getElementById('efficiencyChart').getContext('2d');
+            
+            const efficiencyValues = nbaData.map(p => parseFloat(p.EFFICIENCY));
+            const bins = createHistogramBins(efficiencyValues, 15);
+
+            charts.efficiency = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: bins.labels,
+                    datasets: [{
+                        label: 'Jugadores',
+                        data: bins.counts,
+                        backgroundColor: 'rgba(255, 107, 53, 0.8)',
+                        borderColor: '#FF6B35',
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#FFD700',
+                            bodyColor: '#E2E8F0'
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { color: '#E2E8F0' }, 
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                        },
+                        x: { 
+                            ticks: { color: '#E2E8F0' }, 
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutBounce'
+                    }
+                }
+            });
+        }
+
+        function createPositionChart() {
+            const ctx = document.getElementById('positionChart').getContext('2d');
+            
+            const positionStats = {};
+            nbaData.forEach(player => {
+                if (!positionStats[player.POSITION]) {
+                    positionStats[player.POSITION] = { pts: 0, reb: 0, ast: 0, count: 0 };
+                }
+                positionStats[player.POSITION].pts += player.PTS;
+                positionStats[player.POSITION].reb += player.REB;
+                positionStats[player.POSITION].ast += player.AST;
+                positionStats[player.POSITION].count++;
+            });
+
+            const positions = Object.keys(positionStats);
+            const avgPts = positions.map(pos => (positionStats[pos].pts / positionStats[pos].count).toFixed(1));
+            const avgReb = positions.map(pos => (positionStats[pos].reb / positionStats[pos].count).toFixed(1));
+            const avgAst = positions.map(pos => (positionStats[pos].ast / positionStats[pos].count).toFixed(1));
+
+            charts.position = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: positions,
+                    datasets: [
+                        { 
+                            label: 'Puntos', 
+                            data: avgPts, 
+                            backgroundColor: 'rgba(255, 107, 53, 0.8)',
+                            borderColor: '#FF6B35',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        },
+                        { 
+                            label: 'Rebotes', 
+                            data: avgReb, 
+                            backgroundColor: 'rgba(0, 78, 137, 0.8)',
+                            borderColor: '#004E89',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        },
+                        { 
+                            label: 'Asistencias', 
+                            data: avgAst, 
+                            backgroundColor: 'rgba(255, 215, 0, 0.8)',
+                            borderColor: '#FFD700',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { color: '#E2E8F0' }, 
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                        },
+                        x: { 
+                            ticks: { color: '#E2E8F0' }, 
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                        }
+                    },
+                    plugins: { 
+                        legend: { 
+                            labels: { color: '#E2E8F0' },
+                            position: 'top'
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#FFD700',
+                            bodyColor: '#E2E8F0'
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        function createTeamsChart() {
+            const ctx = document.getElementById('teamsChart').getContext('2d');
+            
+            const teamStats = {};
+            nbaData.forEach(player => {
+                if (!teamStats[player.TEAM_ABBREVIATION]) {
+                    teamStats[player.TEAM_ABBREVIATION] = { efficiency: 0, count: 0 };
+                }
+                teamStats[player.TEAM_ABBREVIATION].efficiency += parseFloat(player.EFFICIENCY);
+                teamStats[player.TEAM_ABBREVIATION].count++;
+            });
+
+            const teamData = Object.entries(teamStats)
+                .map(([team, stats]) => ({ team, avgEfficiency: (stats.efficiency / stats.count).toFixed(1) }))
+                .sort((a, b) => parseFloat(b.avgEfficiency) - parseFloat(a.avgEfficiency))
+                .slice(0, 10);
+
+            charts.teams = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: teamData.map(t => t.team),
+                    datasets: [{
+                        label: 'Eficiencia Promedio',
+                        data: teamData.map(t => t.avgEfficiency),
+                        backgroundColor: teamData.map((_, i) => `hsl(${i * 36}, 70%, 60%)`),
+                        borderColor: teamData.map((_, i) => `hsl(${i * 36}, 70%, 50%)`),
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#FFD700',
+                            bodyColor: '#E2E8F0'
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            ticks: { color: '#E2E8F0' }, 
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                        },
+                        x: { 
+                            beginAtZero: true, 
+                            ticks: { color: '#E2E8F0' }, 
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                        }
+                    },
+                    animation: {
+                        duration: 2500,
+                        easing: 'easeOutElastic'
+                    }
+                }
+            });
+        }
+
+        function createEraChart() {
+            const ctx = document.getElementById('eraChart').getContext('2d');
+            
+            const eraStats = {};
+            nbaData.forEach(player => {
+                if (!eraStats[player.BASKETBALL_ERA]) {
+                    eraStats[player.BASKETBALL_ERA] = { efficiency: 0, count: 0 };
+                }
+                eraStats[player.BASKETBALL_ERA].efficiency += parseFloat(player.EFFICIENCY);
+                eraStats[player.BASKETBALL_ERA].count++;
+            });
+
+            const eras = Object.keys(eraStats).sort();
+            const avgEfficiency = eras.map(era => (eraStats[era].efficiency / eraStats[era].count).toFixed(1));
+
+            charts.era = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: eras,
+                    datasets: [{
+                        label: 'Eficiencia por Era',
+                        data: avgEfficiency,
+                        borderColor: '#FF6B35',
+                        backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#FFD700',
+                        pointBorderColor: '#FF6B35',
+                        pointRadius: 8,
+                        pointHoverRadius: 12,
+                        borderWidth: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#FFD700',
+                            bodyColor: '#E2E8F0'
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { color: '#E2E8F0' }, 
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                        },
+                        x: { 
+                            ticks: { color: '#E2E8F0' }, 
+                            grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                        }
+                    },
+                    animation: {
+                        duration: 3000,
+                        easing: 'easeOutCubic'
+                    }
+                }
+            });
+        }
+
+        function createHistogramBins(data, numBins) {
+            const min = Math.min(...data);
+            const max = Math.max(...data);
+            const binWidth = (max - min) / numBins;
+            
+            const bins = Array(numBins).fill(0);
+            const labels = [];
+            
+            for (let i = 0; i < numBins; i++) {
+                const binStart = min + i * binWidth;
+                const binEnd = binStart + binWidth;
+                labels.push(`${binStart.toFixed(1)}-${binEnd.toFixed(1)}`);
+            }
+            
+            data.forEach(value => {
+                const binIndex = Math.min(Math.floor((value - min) / binWidth), numBins - 1);
+                bins[binIndex]++;
+            });
+            
+            return { labels, counts: bins };
+        }
+
+        // Efectos adicionales al cargar
+        window.addEventListener('load', () => {
+            // Agregar clase de animación a elementos
+            setTimeout(() => {
+                document.querySelectorAll('.stat-card').forEach((card, index) => {
+                    setTimeout(() => {
+                        card.classList.add('glow-effect');
+                    }, index * 200);
+                });
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
