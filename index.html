@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🏀 NBA Analytics Dashboard - Angel Alexander Barrientos</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="nba_data.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap');
         
         * {
             margin: 0;
@@ -15,61 +16,45 @@
         }
 
         :root {
-            --primary: #FF6B35;
-            --secondary: #004E89;
-            --accent: #1A659E;
-            --dark: #0A1628;
-            --gray: #1E293B;
-            --light: #F8FAFC;
-            --text: #E2E8F0;
-            --border: #334155;
-            --gold: #FFD700;
-            --orange: #FF8C00;
-            --purple: #8B5CF6;
+            --nba-red: #C8102E;
+            --nba-blue: #1D428A;
+            --nba-white: #FFFFFF;
+            --nba-silver: #C4CED4;
+            --nba-black: #000000;
+            --gray-100: #F8F9FA;
+            --gray-200: #E9ECEF;
+            --gray-300: #DEE2E6;
+            --gray-400: #CED4DA;
+            --gray-500: #ADB5BD;
+            --gray-600: #6C757D;
+            --gray-700: #495057;
+            --gray-800: #343A40;
+            --gray-900: #212529;
         }
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--dark) 0%, #0F172A 25%, #1E1B4B 50%, #0F172A 75%, var(--dark) 100%);
-            color: var(--text);
+            background: linear-gradient(135deg, var(--gray-100) 0%, var(--nba-white) 50%, var(--gray-100) 100%);
+            color: var(--gray-800);
             line-height: 1.6;
             min-height: 100vh;
-            overflow-x: hidden;
             position: relative;
         }
 
-        /* Fondo animado con pelotas de baloncesto */
-        .basketball-bg {
+        /* Fondo sutil con patrón NBA */
+        body::before {
+            content: '';
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(29, 66, 138, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(200, 16, 46, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(196, 206, 212, 0.05) 0%, transparent 50%);
             pointer-events: none;
             z-index: 1;
-            overflow: hidden;
-        }
-
-        .basketball {
-            position: absolute;
-            font-size: 2rem;
-            opacity: 0.1;
-            animation: float 8s ease-in-out infinite;
-        }
-
-        .basketball:nth-child(1) { left: 10%; animation-delay: 0s; animation-duration: 6s; }
-        .basketball:nth-child(2) { left: 20%; animation-delay: 1s; animation-duration: 8s; }
-        .basketball:nth-child(3) { left: 30%; animation-delay: 2s; animation-duration: 7s; }
-        .basketball:nth-child(4) { left: 40%; animation-delay: 3s; animation-duration: 9s; }
-        .basketball:nth-child(5) { left: 50%; animation-delay: 4s; animation-duration: 6s; }
-        .basketball:nth-child(6) { left: 60%; animation-delay: 5s; animation-duration: 8s; }
-        .basketball:nth-child(7) { left: 70%; animation-delay: 6s; animation-duration: 7s; }
-        .basketball:nth-child(8) { left: 80%; animation-delay: 7s; animation-duration: 9s; }
-        .basketball:nth-child(9) { left: 90%; animation-delay: 8s; animation-duration: 6s; }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(100vh) rotate(0deg); }
-            50% { transform: translateY(-100px) rotate(180deg); }
         }
 
         .container {
@@ -80,79 +65,51 @@
             z-index: 10;
         }
 
-        /* Header mejorado */
+        /* Header estilo NBA oficial */
         .header {
             text-align: center;
             margin-bottom: 4rem;
             padding: 3rem 0;
-            border-bottom: 2px solid var(--border);
+            background: linear-gradient(135deg, var(--nba-white) 0%, var(--gray-100) 100%);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 3px solid var(--nba-red);
             position: relative;
+            overflow: hidden;
         }
 
         .header::before {
             content: '';
             position: absolute;
             top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            height: 4px;
-            background: linear-gradient(90deg, var(--primary), var(--gold), var(--primary));
-            border-radius: 2px;
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from { box-shadow: 0 0 10px var(--primary); }
-            to { box-shadow: 0 0 20px var(--gold), 0 0 30px var(--primary); }
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, var(--nba-red) 0%, var(--nba-blue) 50%, var(--nba-red) 100%);
         }
 
         .header h1 {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: clamp(3rem, 8vw, 6rem);
+            font-family: 'Roboto', sans-serif;
+            font-size: clamp(3rem, 8vw, 5rem);
             font-weight: 900;
-            background: linear-gradient(45deg, var(--primary), var(--gold), var(--orange), var(--primary));
-            background-size: 300% 300%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: var(--nba-red);
             margin-bottom: 1rem;
-            animation: gradientShift 3s ease-in-out infinite;
-            text-shadow: 0 0 30px rgba(255, 107, 53, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            animation: slideInDown 1s ease-out;
         }
 
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        .header p {
-            font-size: 1.5rem;
-            color: var(--text);
-            opacity: 0.9;
-            margin-bottom: 1rem;
-            animation: fadeInUp 1s ease-out 0.5s both;
-        }
-
-        .author {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 1rem;
-            font-size: 1.1rem;
-            color: var(--gold);
-            font-weight: 600;
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 140, 0, 0.1));
-            padding: 0.75rem 1.5rem;
-            border-radius: 50px;
-            border: 1px solid var(--gold);
-            animation: fadeInUp 1s ease-out 0.7s both;
-        }
-
-        .author::before {
-            content: '👑';
-            font-size: 1.2rem;
+        .nba-logo {
+            display: inline-block;
+            font-size: 4rem;
+            margin: 0 1rem;
             animation: bounce 2s infinite;
+        }
+
+        @keyframes slideInDown {
+            from { opacity: 0; transform: translateY(-50px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         @keyframes bounce {
@@ -161,12 +118,36 @@
             60% { transform: translateY(-5px); }
         }
 
+        .header p {
+            font-size: 1.3rem;
+            color: var(--nba-blue);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            animation: fadeInUp 1s ease-out 0.3s both;
+        }
+
+        .author {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            font-size: 1rem;
+            color: var(--gray-700);
+            font-weight: 600;
+            background: var(--nba-white);
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            border: 2px solid var(--nba-blue);
+            box-shadow: 0 4px 15px rgba(29, 66, 138, 0.2);
+            animation: fadeInUp 1s ease-out 0.5s both;
+        }
+
         @keyframes fadeInUp {
             from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Stats Cards mejoradas */
+        /* Stats Cards estilo NBA */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -175,47 +156,43 @@
         }
 
         .stat-card {
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
-            border-radius: 20px;
+            background: var(--nba-white);
+            border-radius: 15px;
             padding: 2.5rem;
-            border: 1px solid var(--border);
             text-align: center;
             position: relative;
             overflow: hidden;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 2px solid var(--gray-200);
             animation: slideInUp 0.8s ease-out both;
         }
 
-        .stat-card:nth-child(1) { animation-delay: 0.1s; }
-        .stat-card:nth-child(2) { animation-delay: 0.2s; }
-        .stat-card:nth-child(3) { animation-delay: 0.3s; }
-        .stat-card:nth-child(4) { animation-delay: 0.4s; }
+        .stat-card:nth-child(1) { 
+            animation-delay: 0.1s; 
+            border-top: 4px solid var(--nba-red);
+        }
+        .stat-card:nth-child(2) { 
+            animation-delay: 0.2s; 
+            border-top: 4px solid var(--nba-blue);
+        }
+        .stat-card:nth-child(3) { 
+            animation-delay: 0.3s; 
+            border-top: 4px solid var(--nba-red);
+        }
+        .stat-card:nth-child(4) { 
+            animation-delay: 0.4s; 
+            border-top: 4px solid var(--nba-blue);
+        }
 
         @keyframes slideInUp {
             from { opacity: 0; transform: translateY(60px) scale(0.8); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.1), transparent);
-            transition: left 0.5s;
-        }
-
-        .stat-card:hover::before {
-            left: 100%;
-        }
-
         .stat-card:hover {
-            transform: translateY(-10px) scale(1.05);
-            box-shadow: 0 20px 40px rgba(255, 107, 53, 0.3);
-            border-color: var(--primary);
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
         }
 
         .stat-icon {
@@ -225,6 +202,11 @@
             animation: pulse 2s infinite;
         }
 
+        .stat-card:nth-child(1) .stat-icon { color: var(--nba-red); }
+        .stat-card:nth-child(2) .stat-icon { color: var(--nba-blue); }
+        .stat-card:nth-child(3) .stat-icon { color: var(--nba-red); }
+        .stat-card:nth-child(4) .stat-icon { color: var(--nba-blue); }
+
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
@@ -233,12 +215,13 @@
         .stat-value {
             font-size: 3.5rem;
             font-weight: 900;
-            color: var(--primary);
             margin-bottom: 0.5rem;
-            font-family: 'Space Grotesk', sans-serif;
-            text-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
+            font-family: 'Roboto', sans-serif;
             animation: countUp 2s ease-out;
         }
+
+        .stat-card:nth-child(odd) .stat-value { color: var(--nba-red); }
+        .stat-card:nth-child(even) .stat-value { color: var(--nba-blue); }
 
         @keyframes countUp {
             from { opacity: 0; transform: scale(0.5); }
@@ -247,14 +230,13 @@
 
         .stat-label {
             font-size: 1rem;
-            color: var(--text);
-            opacity: 0.9;
+            color: var(--gray-600);
             text-transform: uppercase;
             letter-spacing: 0.1em;
             font-weight: 600;
         }
 
-        /* Charts Grid mejorado */
+        /* Charts Grid estilo NBA */
         .charts-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
@@ -263,21 +245,33 @@
         }
 
         .chart-container {
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
-            border-radius: 20px;
+            background: var(--nba-white);
+            border-radius: 15px;
             padding: 2.5rem;
-            border: 1px solid var(--border);
             position: relative;
             overflow: hidden;
-            backdrop-filter: blur(10px);
             transition: all 0.3s ease;
             animation: fadeIn 1s ease-out both;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 2px solid var(--gray-200);
         }
 
-        .chart-container:nth-child(1) { animation-delay: 0.2s; }
-        .chart-container:nth-child(2) { animation-delay: 0.4s; }
-        .chart-container:nth-child(3) { animation-delay: 0.6s; }
-        .chart-container:nth-child(4) { animation-delay: 0.8s; }
+        .chart-container:nth-child(1) { 
+            animation-delay: 0.2s; 
+            border-left: 4px solid var(--nba-red);
+        }
+        .chart-container:nth-child(2) { 
+            animation-delay: 0.4s; 
+            border-left: 4px solid var(--nba-blue);
+        }
+        .chart-container:nth-child(3) { 
+            animation-delay: 0.6s; 
+            border-left: 4px solid var(--nba-red);
+        }
+        .chart-container:nth-child(4) { 
+            animation-delay: 0.8s; 
+            border-left: 4px solid var(--nba-blue);
+        }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(30px); }
@@ -286,19 +280,20 @@
 
         .chart-container:hover {
             transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-            border-color: var(--primary);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
         }
 
         .chart-title {
             font-size: 1.4rem;
             font-weight: 700;
-            color: var(--light);
+            color: var(--gray-800);
             margin-bottom: 2rem;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'Roboto', sans-serif;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .chart-wrapper {
@@ -306,15 +301,16 @@
             height: 350px;
         }
 
-        /* Data Table mejorada */
+        /* Data Table estilo NBA */
         .table-container {
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
-            border-radius: 20px;
+            background: var(--nba-white);
+            border-radius: 15px;
             padding: 2.5rem;
-            border: 1px solid var(--border);
             margin-bottom: 3rem;
-            backdrop-filter: blur(10px);
             animation: fadeIn 1s ease-out 1s both;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 2px solid var(--gray-200);
+            border-top: 4px solid var(--nba-red);
         }
 
         .data-table {
@@ -327,13 +323,13 @@
         .data-table td {
             padding: 1rem;
             text-align: left;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--gray-300);
             transition: all 0.3s ease;
         }
 
         .data-table th {
-            background: linear-gradient(135deg, var(--dark), var(--gray));
-            color: var(--light);
+            background: linear-gradient(135deg, var(--nba-red), var(--nba-blue));
+            color: var(--nba-white);
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -345,30 +341,30 @@
         }
 
         .data-table tr:hover {
-            background: linear-gradient(135deg, rgba(255, 107, 53, 0.1), rgba(255, 140, 0, 0.1));
-            transform: scale(1.02);
+            background: linear-gradient(135deg, rgba(200, 16, 46, 0.05), rgba(29, 66, 138, 0.05));
+            transform: scale(1.01);
         }
 
         .data-table td:first-child {
-            font-weight: 600;
-            color: var(--primary);
+            font-weight: 700;
+            color: var(--nba-red);
         }
 
-        /* Loading mejorado */
+        /* Loading estilo NBA */
         .loading {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 60vh;
-            color: var(--text);
+            color: var(--gray-700);
         }
 
         .spinner {
             width: 60px;
             height: 60px;
-            border: 4px solid var(--border);
-            border-top: 4px solid var(--primary);
+            border: 4px solid var(--gray-300);
+            border-top: 4px solid var(--nba-red);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin-bottom: 2rem;
@@ -393,10 +389,11 @@
         .loading p {
             font-size: 1.2rem;
             font-weight: 600;
+            color: var(--nba-blue);
             animation: pulse 1.5s infinite;
         }
 
-        /* Responsive mejorado */
+        /* Responsive */
         @media (max-width: 768px) {
             .container {
                 padding: 1rem;
@@ -416,55 +413,61 @@
             }
 
             .header h1 {
-                font-size: 3rem;
+                font-size: 2.5rem;
             }
         }
 
-        /* Efectos adicionales */
-        .glow-effect {
-            box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
+        /* Efectos NBA específicos */
+        .nba-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--nba-red), var(--nba-blue));
+            color: var(--nba-white);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .team-colors {
-            background: linear-gradient(45deg, var(--primary), var(--gold));
+            font-weight: 700;
+            background: linear-gradient(45deg, var(--nba-red), var(--nba-blue));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
+
+        .efficiency-highlight {
+            color: var(--nba-red);
+            font-weight: 900;
+            text-shadow: 1px 1px 2px rgba(200, 16, 46, 0.2);
+        }
     </style>
 </head>
 <body>
-    <!-- Fondo animado -->
-    <div class="basketball-bg">
-        <div class="basketball">🏀</div>
-        <div class="basketball">🏀</div>
-        <div class="basketball">🏀</div>
-        <div class="basketball">🏀</div>
-        <div class="basketball">🏀</div>
-        <div class="basketball">🏀</div>
-        <div class="basketball">🏀</div>
-        <div class="basketball">🏀</div>
-        <div class="basketball">🏀</div>
-    </div>
-
     <div class="container">
-        <!-- Header mejorado -->
+        <!-- Header estilo NBA oficial -->
         <div class="header">
-            <h1>🏀 NBA ANALYTICS DASHBOARD</h1>
-            <p>El Dashboard Más Épico de Estadísticas NBA</p>
-            <div class="author">Por Angel Alexander Barrientos Hidalgo</div>
+            <h1>
+                <span class="nba-logo">🏀</span>
+                NBA ANALYTICS DASHBOARD
+                <span class="nba-logo">🏀</span>
+            </h1>
+            <p>Dashboard Oficial de Estadísticas NBA</p>
+            <div class="author">🏆 Por Angel Alexander Barrientos Hidalgo</div>
         </div>
 
-        <!-- Loading State mejorado -->
+        <!-- Loading State -->
         <div id="loadingState" class="loading">
             <div class="spinner"></div>
-            <p>Cargando las estadísticas más increíbles de la NBA...</p>
-            <p style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem;">Preparando datos épicos 🔥</p>
+            <p>Cargando datos oficiales de la NBA...</p>
+            <p style="font-size: 0.9rem; opacity: 0.7; margin-top: 0.5rem; color: var(--nba-red);">Preparando estadísticas profesionales</p>
         </div>
 
         <!-- Main Content -->
         <div id="mainContent" style="display: none;">
-            <!-- Stats Cards mejoradas -->
+            <!-- Stats Cards -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <span class="stat-icon">👥</span>
@@ -472,7 +475,7 @@
                     <div class="stat-label">Total Jugadores</div>
                 </div>
                 <div class="stat-card">
-                    <span class="stat-icon">📈</span>
+                    <span class="stat-icon">📊</span>
                     <div class="stat-value" id="avgEfficiency">0.0</div>
                     <div class="stat-label">Eficiencia Promedio</div>
                 </div>
@@ -482,16 +485,16 @@
                     <div class="stat-label">Puntos Promedio</div>
                 </div>
                 <div class="stat-card">
-                    <span class="stat-icon">⚡</span>
+                    <span class="stat-icon">⭐</span>
                     <div class="stat-value" id="activePlayers">0</div>
                     <div class="stat-label">Jugadores Activos</div>
                 </div>
             </div>
 
-            <!-- Charts mejorados -->
+            <!-- Charts -->
             <div class="charts-grid">
                 <div class="chart-container">
-                    <div class="chart-title">📊 Distribución de Eficiencia</div>
+                    <div class="chart-title">📈 Distribución de Eficiencia</div>
                     <div class="chart-wrapper">
                         <canvas id="efficiencyChart"></canvas>
                     </div>
@@ -509,16 +512,16 @@
                     </div>
                 </div>
                 <div class="chart-container">
-                    <div class="chart-title">📈 Evolución por Era</div>
+                    <div class="chart-title">📊 Evolución por Era</div>
                     <div class="chart-wrapper">
                         <canvas id="eraChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- Top Performers Table mejorada -->
+            <!-- Top Performers Table -->
             <div class="table-container">
-                <h3 class="chart-title">🌟 Top 20 Superstars de la NBA</h3>
+                <h3 class="chart-title">🏆 Top 20 Jugadores NBA</h3>
                 <div style="overflow-x: auto;">
                     <table class="data-table">
                         <thead>
@@ -542,256 +545,13 @@
     </div>
 
     <script>
-        // Datos simulados mejorados de NBA
-        const nbaData = [
-            {
-                PLAYER_FIRST_NAME: "LeBron",
-                PLAYER_LAST_NAME: "James",
-                TEAM_ABBREVIATION: "LAL",
-                POSITION: "SF",
-                PTS: 28.9,
-                REB: 8.3,
-                AST: 6.8,
-                EFFICIENCY: 27.5,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Stephen",
-                PLAYER_LAST_NAME: "Curry",
-                TEAM_ABBREVIATION: "GSW",
-                POSITION: "PG",
-                PTS: 29.5,
-                REB: 5.2,
-                AST: 6.1,
-                EFFICIENCY: 24.8,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Giannis",
-                PLAYER_LAST_NAME: "Antetokounmpo",
-                TEAM_ABBREVIATION: "MIL",
-                POSITION: "PF",
-                PTS: 31.1,
-                REB: 11.8,
-                AST: 5.7,
-                EFFICIENCY: 32.1,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Luka",
-                PLAYER_LAST_NAME: "Dončić",
-                TEAM_ABBREVIATION: "DAL",
-                POSITION: "PG",
-                PTS: 32.4,
-                REB: 8.6,
-                AST: 8.0,
-                EFFICIENCY: 28.7,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Jayson",
-                PLAYER_LAST_NAME: "Tatum",
-                TEAM_ABBREVIATION: "BOS",
-                POSITION: "SF",
-                PTS: 30.1,
-                REB: 8.8,
-                AST: 4.9,
-                EFFICIENCY: 25.6,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Joel",
-                PLAYER_LAST_NAME: "Embiid",
-                TEAM_ABBREVIATION: "PHI",
-                POSITION: "C",
-                PTS: 33.1,
-                REB: 10.2,
-                AST: 4.2,
-                EFFICIENCY: 31.4,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Nikola",
-                PLAYER_LAST_NAME: "Jokić",
-                TEAM_ABBREVIATION: "DEN",
-                POSITION: "C",
-                PTS: 24.5,
-                REB: 11.8,
-                AST: 9.8,
-                EFFICIENCY: 27.8,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Kevin",
-                PLAYER_LAST_NAME: "Durant",
-                TEAM_ABBREVIATION: "PHX",
-                POSITION: "PF",
-                PTS: 29.7,
-                REB: 6.7,
-                AST: 5.0,
-                EFFICIENCY: 26.3,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Damian",
-                PLAYER_LAST_NAME: "Lillard",
-                TEAM_ABBREVIATION: "MIL",
-                POSITION: "PG",
-                PTS: 32.2,
-                REB: 4.8,
-                AST: 7.3,
-                EFFICIENCY: 24.1,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Anthony",
-                PLAYER_LAST_NAME: "Davis",
-                TEAM_ABBREVIATION: "LAL",
-                POSITION: "PF",
-                PTS: 25.9,
-                REB: 12.5,
-                AST: 2.6,
-                EFFICIENCY: 26.7,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Kawhi",
-                PLAYER_LAST_NAME: "Leonard",
-                TEAM_ABBREVIATION: "LAC",
-                POSITION: "SF",
-                PTS: 23.7,
-                REB: 6.2,
-                AST: 3.9,
-                EFFICIENCY: 22.8,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Jimmy",
-                PLAYER_LAST_NAME: "Butler",
-                TEAM_ABBREVIATION: "MIA",
-                POSITION: "SF",
-                PTS: 22.9,
-                REB: 5.9,
-                AST: 5.3,
-                EFFICIENCY: 21.4,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Ja",
-                PLAYER_LAST_NAME: "Morant",
-                TEAM_ABBREVIATION: "MEM",
-                POSITION: "PG",
-                PTS: 26.2,
-                REB: 5.9,
-                AST: 8.1,
-                EFFICIENCY: 23.5,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Zion",
-                PLAYER_LAST_NAME: "Williamson",
-                TEAM_ABBREVIATION: "NOP",
-                POSITION: "PF",
-                PTS: 26.0,
-                REB: 7.0,
-                AST: 3.7,
-                EFFICIENCY: 24.3,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Trae",
-                PLAYER_LAST_NAME: "Young",
-                TEAM_ABBREVIATION: "ATL",
-                POSITION: "PG",
-                PTS: 25.7,
-                REB: 2.8,
-                AST: 10.8,
-                EFFICIENCY: 22.1,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Devin",
-                PLAYER_LAST_NAME: "Booker",
-                TEAM_ABBREVIATION: "PHX",
-                POSITION: "SG",
-                PTS: 27.1,
-                REB: 4.5,
-                AST: 6.7,
-                EFFICIENCY: 23.9,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Donovan",
-                PLAYER_LAST_NAME: "Mitchell",
-                TEAM_ABBREVIATION: "CLE",
-                POSITION: "SG",
-                PTS: 28.3,
-                REB: 4.4,
-                AST: 4.3,
-                EFFICIENCY: 22.7,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Karl-Anthony",
-                PLAYER_LAST_NAME: "Towns",
-                TEAM_ABBREVIATION: "NYK",
-                POSITION: "C",
-                PTS: 22.0,
-                REB: 8.8,
-                AST: 3.0,
-                EFFICIENCY: 21.5,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Bam",
-                PLAYER_LAST_NAME: "Adebayo",
-                TEAM_ABBREVIATION: "MIA",
-                POSITION: "C",
-                PTS: 19.3,
-                REB: 10.4,
-                AST: 3.4,
-                EFFICIENCY: 20.8,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            },
-            {
-                PLAYER_FIRST_NAME: "Rudy",
-                PLAYER_LAST_NAME: "Gobert",
-                TEAM_ABBREVIATION: "MIN",
-                POSITION: "C",
-                PTS: 14.0,
-                REB: 12.9,
-                AST: 1.3,
-                EFFICIENCY: 18.2,
-                BASKETBALL_ERA: "Modern",
-                CAREER_STATUS: "Active"
-            }
-        ];
-
+        let nbaData = [];
         let charts = {};
 
-        // Configuración mejorada de Chart.js
-        Chart.defaults.color = '#E2E8F0';
-        Chart.defaults.backgroundColor = '#FF6B35';
-        Chart.defaults.borderColor = '#334155';
+        // Configuración de Chart.js con colores NBA
+        Chart.defaults.color = '#495057';
+        Chart.defaults.backgroundColor = '#C8102E';
+        Chart.defaults.borderColor = '#DEE2E6';
 
         // Cargar datos al iniciar
         document.addEventListener('DOMContentLoaded', function() {
@@ -800,8 +560,11 @@
 
         async function loadNBAData() {
             try {
-                // Simular delay de carga con animación
-                await new Promise(resolve => setTimeout(resolve, 2500));
+                // Simular delay de carga
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // USAR DATOS REALES del archivo nba_data.js
+                nbaData = loadNBADataFromFile();
                 
                 console.log('Datos cargados:', nbaData.length, 'jugadores');
                 
@@ -821,7 +584,7 @@
                 
             } catch (error) {
                 console.error('Error loading data:', error);
-                document.getElementById('loadingState').innerHTML = '<p>❌ Error al cargar los datos épicos</p>';
+                document.getElementById('loadingState').innerHTML = '<p>❌ Error al cargar los datos</p>';
             }
         }
 
@@ -832,13 +595,13 @@
             const avgPoints = (nbaData.reduce((sum, p) => sum + p.PTS, 0) / totalPlayers).toFixed(1);
             const activePlayers = nbaData.filter(p => p.CAREER_STATUS === 'Active').length;
 
-            // Animación de conteo para las estadísticas
+            // Animación de conteo
             animateValue('totalPlayers', 0, totalPlayers, 2000);
             animateValue('avgEfficiency', 0, parseFloat(avgEfficiency), 2000, 1);
             animateValue('avgPoints', 0, parseFloat(avgPoints), 2000, 1);
             animateValue('activePlayers', 0, activePlayers, 2000);
 
-            // Actualizar tabla de top performers
+            // Actualizar tabla
             updateTopPerformersTable();
         }
 
@@ -868,15 +631,14 @@
 
             topPerformers.forEach((player, index) => {
                 const row = document.createElement('tr');
-                row.style.animationDelay = `${index * 0.1}s`;
                 row.innerHTML = `
                     <td class="team-colors">${player.PLAYER_FIRST_NAME} ${player.PLAYER_LAST_NAME}</td>
-                    <td><strong>${player.TEAM_ABBREVIATION}</strong></td>
-                    <td><span style="background: linear-gradient(45deg, #FF6B35, #FFD700); padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.8rem;">${player.POSITION}</span></td>
+                    <td><span class="nba-badge">${player.TEAM_ABBREVIATION}</span></td>
+                    <td><strong>${player.POSITION}</strong></td>
                     <td><strong>${player.PTS}</strong></td>
                     <td><strong>${player.REB}</strong></td>
                     <td><strong>${player.AST}</strong></td>
-                    <td><span style="color: #FFD700; font-weight: bold;">${player.EFFICIENCY}</span></td>
+                    <td><span class="efficiency-highlight">${player.EFFICIENCY}</span></td>
                     <td>${player.BASKETBALL_ERA}</td>
                 `;
                 tbody.appendChild(row);
@@ -903,8 +665,8 @@
                     datasets: [{
                         label: 'Jugadores',
                         data: bins.counts,
-                        backgroundColor: 'rgba(255, 107, 53, 0.8)',
-                        borderColor: '#FF6B35',
+                        backgroundColor: 'rgba(200, 16, 46, 0.8)',
+                        borderColor: '#C8102E',
                         borderWidth: 2,
                         borderRadius: 8,
                         borderSkipped: false,
@@ -917,19 +679,19 @@
                         legend: { display: false },
                         tooltip: {
                             backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            titleColor: '#FFD700',
-                            bodyColor: '#E2E8F0'
+                            titleColor: '#C8102E',
+                            bodyColor: '#495057'
                         }
                     },
                     scales: {
                         y: { 
                             beginAtZero: true, 
-                            ticks: { color: '#E2E8F0' }, 
-                            grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                            ticks: { color: '#495057' }, 
+                            grid: { color: 'rgba(206, 212, 218, 0.5)' } 
                         },
                         x: { 
-                            ticks: { color: '#E2E8F0' }, 
-                            grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                            ticks: { color: '#495057' }, 
+                            grid: { color: 'rgba(206, 212, 218, 0.5)' } 
                         }
                     },
                     animation: {
@@ -967,24 +729,24 @@
                         { 
                             label: 'Puntos', 
                             data: avgPts, 
-                            backgroundColor: 'rgba(255, 107, 53, 0.8)',
-                            borderColor: '#FF6B35',
+                            backgroundColor: 'rgba(200, 16, 46, 0.8)',
+                            borderColor: '#C8102E',
                             borderWidth: 2,
                             borderRadius: 6
                         },
                         { 
                             label: 'Rebotes', 
                             data: avgReb, 
-                            backgroundColor: 'rgba(0, 78, 137, 0.8)',
-                            borderColor: '#004E89',
+                            backgroundColor: 'rgba(29, 66, 138, 0.8)',
+                            borderColor: '#1D428A',
                             borderWidth: 2,
                             borderRadius: 6
                         },
                         { 
                             label: 'Asistencias', 
                             data: avgAst, 
-                            backgroundColor: 'rgba(255, 215, 0, 0.8)',
-                            borderColor: '#FFD700',
+                            backgroundColor: 'rgba(196, 206, 212, 0.8)',
+                            borderColor: '#C4CED4',
                             borderWidth: 2,
                             borderRadius: 6
                         }
@@ -996,23 +758,23 @@
                     scales: {
                         y: { 
                             beginAtZero: true, 
-                            ticks: { color: '#E2E8F0' }, 
-                            grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                            ticks: { color: '#495057' }, 
+                            grid: { color: 'rgba(206, 212, 218, 0.5)' } 
                         },
                         x: { 
-                            ticks: { color: '#E2E8F0' }, 
-                            grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                            ticks: { color: '#495057' }, 
+                            grid: { color: 'rgba(206, 212, 218, 0.5)' } 
                         }
                     },
                     plugins: { 
                         legend: { 
-                            labels: { color: '#E2E8F0' },
+                            labels: { color: '#495057' },
                             position: 'top'
                         },
                         tooltip: {
                             backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            titleColor: '#FFD700',
-                            bodyColor: '#E2E8F0'
+                            titleColor: '#C8102E',
+                            bodyColor: '#495057'
                         }
                     },
                     animation: {
@@ -1047,8 +809,8 @@
                     datasets: [{
                         label: 'Eficiencia Promedio',
                         data: teamData.map(t => t.avgEfficiency),
-                        backgroundColor: teamData.map((_, i) => `hsl(${i * 36}, 70%, 60%)`),
-                        borderColor: teamData.map((_, i) => `hsl(${i * 36}, 70%, 50%)`),
+                        backgroundColor: teamData.map((_, i) => i % 2 === 0 ? 'rgba(200, 16, 46, 0.8)' : 'rgba(29, 66, 138, 0.8)'),
+                        borderColor: teamData.map((_, i) => i % 2 === 0 ? '#C8102E' : '#1D428A'),
                         borderWidth: 2,
                         borderRadius: 8
                     }]
@@ -1061,19 +823,19 @@
                         legend: { display: false },
                         tooltip: {
                             backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            titleColor: '#FFD700',
-                            bodyColor: '#E2E8F0'
+                            titleColor: '#C8102E',
+                            bodyColor: '#495057'
                         }
                     },
                     scales: {
                         y: { 
-                            ticks: { color: '#E2E8F0' }, 
-                            grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                            ticks: { color: '#495057' }, 
+                            grid: { color: 'rgba(206, 212, 218, 0.5)' } 
                         },
                         x: { 
                             beginAtZero: true, 
-                            ticks: { color: '#E2E8F0' }, 
-                            grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                            ticks: { color: '#495057' }, 
+                            grid: { color: 'rgba(206, 212, 218, 0.5)' } 
                         }
                     },
                     animation: {
@@ -1106,12 +868,12 @@
                     datasets: [{
                         label: 'Eficiencia por Era',
                         data: avgEfficiency,
-                        borderColor: '#FF6B35',
-                        backgroundColor: 'rgba(255, 107, 53, 0.1)',
+                        borderColor: '#C8102E',
+                        backgroundColor: 'rgba(200, 16, 46, 0.1)',
                         fill: true,
                         tension: 0.4,
-                        pointBackgroundColor: '#FFD700',
-                        pointBorderColor: '#FF6B35',
+                        pointBackgroundColor: '#1D428A',
+                        pointBorderColor: '#C8102E',
                         pointRadius: 8,
                         pointHoverRadius: 12,
                         borderWidth: 4
@@ -1124,19 +886,19 @@
                         legend: { display: false },
                         tooltip: {
                             backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            titleColor: '#FFD700',
-                            bodyColor: '#E2E8F0'
+                            titleColor: '#C8102E',
+                            bodyColor: '#495057'
                         }
                     },
                     scales: {
                         y: { 
                             beginAtZero: true, 
-                            ticks: { color: '#E2E8F0' }, 
-                            grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                            ticks: { color: '#495057' }, 
+                            grid: { color: 'rgba(206, 212, 218, 0.5)' } 
                         },
                         x: { 
-                            ticks: { color: '#E2E8F0' }, 
-                            grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                            ticks: { color: '#495057' }, 
+                            grid: { color: 'rgba(206, 212, 218, 0.5)' } 
                         }
                     },
                     animation: {
@@ -1168,18 +930,6 @@
             
             return { labels, counts: bins };
         }
-
-        // Efectos adicionales al cargar
-        window.addEventListener('load', () => {
-            // Agregar clase de animación a elementos
-            setTimeout(() => {
-                document.querySelectorAll('.stat-card').forEach((card, index) => {
-                    setTimeout(() => {
-                        card.classList.add('glow-effect');
-                    }, index * 200);
-                });
-            }, 3000);
-        });
     </script>
 </body>
 </html>
